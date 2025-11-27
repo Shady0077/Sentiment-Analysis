@@ -1,139 +1,156 @@
-📌 Sentiment Analysis System (DistilBERT + Flask)
+# 📌 Dual-Input Sentiment Analysis System (DistilBERT + Flask)
 
-This project is a Sentiment Analysis System that predicts whether a review is Positive or Negative by analyzing both the review title and the review text.
-It uses two DistilBERT transformer models—one for titles and one for full review text—combined into a custom neural network for improved accuracy.
+This project implements a fast and highly accurate sentiment analysis system that determines whether a product review is Positive or Negative. It achieves superior performance by leveraging a custom neural network architecture that fuses embeddings from two separate DistilBERT transformers—one for the Review Title and one for the Review Text.
 
-The system is deployed using a Flask web application and provides real-time predictions through a simple API or UI.
+The system is deployed as a real-time prediction service using a lightweight Flask web application.
 
-🚀 Features
+## 🚀 Features
 
-🔍 Dual-Input Sentiment Analysis
+### 🔍 Dual-Input Sentiment Analysis
 
-DistilBERT #1 → Encodes Review Title
+The core innovation is the dual-input architecture, which captures nuanced sentiment from both short (title) and long (review text) contexts:
 
-DistilBERT #2 → Encodes Review Text
+  * **DistilBERT \#1:** Encodes the **Review Title**.
+  * **DistilBERT \#2:** Encodes the **Review Text**.
+  * The resulting embeddings are **concatenated and fused** in a custom neural network layer, leading to improved accuracy over single-input models.
 
-Both embeddings are fused in a custom neural network.
+### 🧠 Transformer-Powered
 
-🧠 Transformer-powered
+The system is built on state-of-the-art Natural Language Processing (NLP):
 
-Uses HuggingFace DistilBERT pre-trained models
+  * Uses **HuggingFace DistilBERT** pre-trained models.
+  * The models are **fine-tuned** specifically for binary sentiment classification (Positive/Negative).
 
-Fine-tuned for binary sentiment classification
+### 🕸️ Flask-Based Deployment
 
-🕸️ Flask-Based Deployment
+Provides a simple, clean, and efficient REST API for real-time predictions.
 
-REST API /predict
+  * **Endpoint:** `/predict`
+  * **Data Format:** Accepts JSON input for seamless integration.
 
-Accepts JSON input:
+### ⚡ Fast and Lightweight
 
-{
-  "title": "The product is great",
-  "review": "Really good quality, arrived on time."
-}
+Performance is prioritized:
 
+  * **DistilBERT** is naturally smaller and faster than models like BERT.
+  * The system ensures **fast inference** (under 200ms) even when running on CPU environments.
 
-⚡ Fast and Lightweight
+## 🏗️ System Architecture
 
-DistilBERT ensures fast inference even on CPU
+The custom model is a clear example of transfer learning combined with a fused-feature network:
 
-Custom fusion layer enhances accuracy
+```mermaid
+graph TD
+    A[Review Title] -->|Input 1| B(DistilBERT Title);
+    C[Review Text] -->|Input 2| D(DistilBERT Text);
+    B --> E(Fusion Layer);
+    D --> E;
+    E --> F(Output Layer);
+    F --> G[Positive/Negative Prediction];
 
-🏗️ System Architecture
- ┌────────────┐       ┌──────────────┐
- │ Review     │       │ Review       │
- │ Title      │       │ Text         │
- └──────┬─────┘       └──────┬───────┘
-        │                     │
-        ▼                     ▼
- ┌────────────┐       ┌──────────────┐
- │ DistilBERT │       │ DistilBERT   │
- │  (Title)   │       │   (Text)     │
- └──────┬─────┘       └──────┬───────┘
-        └────────┬────────────┘
-                 ▼
-        ┌─────────────────┐
-        │ Fusion Layer     │
-        │ (Dense + ReLU)   │
-        └────────┬────────┘
-                 ▼
-        ┌─────────────────┐
-        │ Output Layer     │
-        │ Positive/Negative│
-        └─────────────────┘
+    subgraph Custom Sentiment Model
+        B
+        D
+        E{Fusion Layer: Dense + ReLU}
+        F
+    end
+```
 
-📦 Tech Stack
-Component	Technology
-NLP Models	DistilBERT (HuggingFace)
-Backend API	Flask
-Neural Network	PyTorch / TensorFlow (your project version)
-Tokenization	HuggingFace Tokenizers
-Deployment	Localhost / Cloud
-Data Format	JSON
-🚀 How to Run the Project
-1️⃣ Clone the repository
-git clone <your_repo_link>
-cd sentiment-analysis
+## 📦 Tech Stack
 
-2️⃣ Install dependencies
-pip install -r requirements.txt
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **NLP Models** | DistilBERT (HuggingFace) | Core sentiment feature extraction |
+| **Backend API** | Flask | Lightweight RESTful deployment |
+| **Neural Network** | PyTorch / TensorFlow (Specify which one for better clarity) | Framework for custom fusion layer and training |
+| **Tokenization** | HuggingFace Tokenizers | Efficient text preprocessing |
+| **Data Format** | JSON | Standard API communication |
 
-3️⃣ Start the Flask app
-python app.py
+## 🧪 API Usage
 
+The system exposes a single POST endpoint for predictions.
 
-Flask will start at:
+**POST** `/predict`
 
-http://127.0.0.1:5000/
+### Example Request
 
-🧪 API Usage
-POST /predict
-
-Example request:
-
+```json
 {
   "title": "Worst purchase ever",
-  "review": "The product stopped working within 2 days!"
+  "review": "The product stopped working within 2 days! I need a refund immediately."
 }
+```
 
+### Example Positive Response
 
-Example response:
-
+```json
 {
   "prediction": "Negative"
 }
+```
 
-📁 Project Structure
+## 📈 Model Performance
+
+The dual-input approach significantly boosts classification quality:
+
+| Metric | Score | Note |
+| :--- | :--- | :--- |
+| **Accuracy** | \~92% | High overall classification rate |
+| **Precision** | High | Low false positive rate |
+| **Recall** | High | Low false negative rate |
+| **Inference Time** | \<200ms on CPU | Ideal for real-time applications |
+
+## 🚀 How to Run the Project
+
+Follow these steps to get the server running locally:
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone <your_repo_link>
+cd sentiment-analysis
+```
+
+### 2️⃣ Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3️⃣ Start the Flask App
+
+```bash
+python app.py
+```
+
+The Flask server will be accessible at:
+👉 **`http://127.0.0.1:5000/`**
+
+## 📁 Project Structure
+
+```
 sentiment-analysis/
 │
-├── app.py               # Flask server
-├── model.py             # Combined DistilBERT sentiment model
-├── requirements.txt     # Dependencies
-├── static/              # Front-end files
-├── templates/           # HTML templates
-└── README.md            # Project documentation
+├── app.py              # Flask server, API endpoint, and model loading
+├── model.py            # Combined DistilBERT architecture and custom NN
+├── requirements.txt    # Project dependencies
+├── static/             # CSS/JS for potential simple UI
+├── templates/          # HTML templates for the UI
+└── README.md           # Project documentation
+```
 
-📈 Model Performance
-Metric	Score
-Accuracy	~92%
-Precision	High
-Recall	High
-Inference Time	Fast (<200ms on CPU)
+## ✨ Future Improvements
 
+The project is built for expansion. Potential future work includes:
 
-✨ Future Improvements
+  * **Multimodal Inputs:** Integrate audio or image analysis to support richer data types.
+  * **Advanced Deployment:** Deploy on cloud services (AWS / Render / Railway) for global scalability.
+  * **LLM Verification:** Add a final **LLM-based sentiment verifier** to cross-check ambiguous predictions.
+  * **Multilingual Support:** Fine-tune models for other languages.
+  * **UI Dashboard:** Create a simple UI with charts for monitoring prediction history.
 
-Add Multimodal Inputs (Audio + Text)
+## 👨‍💻 Author
 
-Deploy on AWS / Render / Railway
+**Manas Upadhyay**
 
-Add LLM-based sentiment verifier
-
-Support multilingual sentiment analysis
-
-Add UI dashboard with charts
-
-👨‍💻 Author
-
-Manas Upadhyay
-Sentiment Analysis • NLP • Deep Learning • Flask Apps
+*Sentiment Analysis • NLP • Deep Learning • Flask Apps*
