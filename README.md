@@ -107,7 +107,7 @@ Follow these steps to get the server running locally:
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone <your_repo_link>
+git clone <https://github.com/Shady0077/Sentiment-Analysis>
 cd sentiment-analysis
 ```
 
