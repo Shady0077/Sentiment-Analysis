@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment Analysis</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ========== RESET ========== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ========== VIDEO BACKGROUND ========== */
+        #bgVideo {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -2;
+            object-fit: cover;
+            filter: brightness(55%) blur(1px);
+        }
+
+        /* Dark overlay */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.35);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* ========== GLASS CARD STYLE ========== */
+        .glass-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            font-size: 48px;
+            font-weight: 700;
+        }
+        header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        /* ========== FORM STYLING ========== */
+        input, textarea, button {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: none;
+            font-size: 15px;
+        }
+
+        input, textarea {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #e5e5e5;
+        }
+
+        /* BUTTON */
+        button {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.25s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* ========== RESULT (GLASS) ========== */
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 26px;
+            font-weight: 700;
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ========== BATCH CARD ========== */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .review-card {
+            background: rgba(255,255,255,0.12);
+            border-radius: 15px;
+            padding: 20px;
+            width: 300px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.25);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .review-card.visible {
+            animation: fadeInUp 0.5s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .title { font-weight: 700; margin-bottom: 10px; }
+        .review-text { font-size: 14px; margin-bottom: 10px; }
+
+        .sentiment {
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            color: white;
+        }
+        .positive { background-color: #16a34a; }
+        .negative { background-color: #dc2626; }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            opacity: 0.7;
+        }
+
+        /* MOBILE */
+        @media (max-width: 600px) {
+            header h1 { font-size: 34px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Video Background -->
+    <video autoplay muted loop id="bgVideo">
+        <source src="/static/bg-video.mp4" type="video/mp4">
+    </video>
+    <div class="overlay"></div>
+
+    <div class="container">
+
+        <header>
+            <h1>Sentiment Analysis App</h1>
+            <p>Analyze text Fast and Efficiently </p>
+        </header>
+
+        <!-- Single Prediction -->
+        <div class="glass-box">
+            <h2>Single Prediction</h2>
+            <form method="POST">
+                <label>Title:</label>
+                <input type="text" name="title_text" placeholder="Enter title" required>
+
+                <label>Review:</label>
+                <textarea name="review_text" rows="5" placeholder="Enter review" required></textarea>
+
+                <button type="submit">Predict Sentiment</button>
+            </form>
+
+            {% if result %}
+                <div class="result" id="typedResult"></div>
+            {% endif %}
+        </div>
+
+        <!-- Batch Prediction -->
+        <div class="glass-box">
+            <h2>Batch Prediction (CSV)</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="csv_file" accept=".csv" required>
+                <button type="submit">Upload & Predict</button>
+            </form>
+        </div>
+
+        {% if table_data %}
+        <div class="card-container">
+            {% for row in table_data %}
+            <div class="review-card">
+                <div class="title">{{ row['title'] }}</div>
+                <div class="review-text">{{ row['review'] }}</div>
+                <div class="sentiment {% if row['Predicted Sentiment']=='Positive' %}positive{% else %}negative{% endif %}">
+                    {{ row['Predicted Sentiment'] }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <footer>
+            © 2025 Sentiment Analysis App — Create By Manas and Parth
+        </footer>
+    </div>
+
+    <script>
+        // Typewriter Effect
+        const resultDiv = document.getElementById("typedResult");
+        {% if result %}
+        const text = "{{ result }}";
+        let index = 0;
+        function typeWriter() {
+            if (index < text.length) {
+                resultDiv.textContent += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+        typeWriter();
+        {% endif %}
+
+        // Fade-in Cards
+        window.onload = () => {
+            document.querySelectorAll(".review-card").forEach((card, i) => {
+                setTimeout(() => card.classList.add("visible"), i * 120);
+            });
+        };
+    </script>
+
+</body>
+</html>
